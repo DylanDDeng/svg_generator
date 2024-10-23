@@ -8,8 +8,23 @@ import re
 # 加载环境变量
 load_dotenv()
 
+# 获取 API key 的函数
+def get_api_key():
+    # 首先尝试从 Streamlit Secrets 获取
+    if "ANTHROPIC_API_KEY" in st.secrets:
+        return st.secrets["ANTHROPIC_API_KEY"]
+    # 然后尝试从环境变量获取
+    elif "ANTHROPIC_API_KEY" in os.environ:
+        return os.environ["ANTHROPIC_API_KEY"]
+    else:
+        raise Exception("未找到 API key")
+
 # 初始化 Anthropic 客户端
-anthropic = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
+try:
+    api_key = get_api_key()
+    anthropic = Anthropic(api_key=api_key)
+except Exception as e:
+    st.error(f"API 初始化错误: {str(e)}")
 
 # 预设的 system prompts
 PRESET_PROMPTS = {
