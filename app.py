@@ -3,21 +3,19 @@ from anthropic import Anthropic
 import os
 from dotenv import load_dotenv
 from datetime import datetime
-import re
+import re 
+import toml
 
 # 加载环境变量
-load_dotenv()
+# load_dotenv()
 
-# 获取 API key 的函数
-def get_api_key():
-    # 首先尝试从 Streamlit Secrets 获取
-    if "ANTHROPIC_API_KEY" in st.secrets:
-        return st.secrets["ANTHROPIC_API_KEY"]
-    # 然后尝试从环境变量获取
-    elif "ANTHROPIC_API_KEY" in os.environ:
-        return os.environ["ANTHROPIC_API_KEY"]
-    else:
-        raise Exception("未找到 API key")
+# 加载 TOML 配置
+try:
+    config = toml.load("config.toml")
+    api_key = config["api"]["anthropic_key"]
+except Exception as e:
+    st.error(f"无法加载配置文件: {str(e)}")
+    st.stop()
 
 # 初始化 Anthropic 客户端
 try:
