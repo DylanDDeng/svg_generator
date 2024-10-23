@@ -1,42 +1,21 @@
 import streamlit as st
 from anthropic import Anthropic
-import os
-import toml
 from datetime import datetime
 import re
-from pathlib import Path
-
-def get_api_key():
-    """从配置文件获取 API key"""
-    try:
-        # 尝试从 config.toml 读取配置
-        config_path = Path("config.toml")
-        if config_path.exists():
-            config = toml.load(config_path)
-            api_key = config.get("api", {}).get("anthropic_key")
-            if api_key:
-                return api_key
-    except Exception as e:
-        st.error(f"读取配置文件失败: {str(e)}")
-    
-    # 如果没有找到配置，显示错误信息
-    st.error("""
-    未找到 API Key 配置。请确保：
-    1. config.toml 文件存在于项目根目录
-    2. 文件包含正确的配置格式
-    示例 config.toml:
-    [api]
-    anthropic_key = "your-api-key-here"
-    """)
-    st.stop()
 
 # 初始化 Anthropic 客户端
 try:
-    api_key = get_api_key()
+    api_key = st.secrets["ANTHROPIC_API_KEY"]
     anthropic = Anthropic(api_key=api_key)
 except Exception as e:
     st.error(f"初始化 Anthropic 客户端失败: {str(e)}")
+    st.error("""
+    请确保正确配置 API Key:
+    1. 本地开发：在 .streamlit/secrets.toml 文件中配置
+    2. Streamlit Cloud：在项目设置的 Secrets 中配置
+    """)
     st.stop()
+
 
 # 预设的 system prompts
 PRESET_PROMPTS = {
