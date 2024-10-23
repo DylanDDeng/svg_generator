@@ -1,20 +1,33 @@
 import streamlit as st
 from anthropic import Anthropic
 import os
-from dotenv import load_dotenv
-from datetime import datetime
-import re 
 import toml
+from datetime import datetime
+import re
+from pathlib import Path
 
-# 加载环境变量
-# load_dotenv()
-
-# 加载 TOML 配置
-try:
-    config = toml.load("config.toml")
-    api_key = config["api"]["anthropic_key"]
-except Exception as e:
-    st.error(f"无法加载配置文件: {str(e)}")
+def get_api_key():
+    """从配置文件获取 API key"""
+    try:
+        # 尝试从 config.toml 读取配置
+        config_path = Path("config.toml")
+        if config_path.exists():
+            config = toml.load(config_path)
+            api_key = config.get("api", {}).get("anthropic_key")
+            if api_key:
+                return api_key
+    except Exception as e:
+        st.error(f"读取配置文件失败: {str(e)}")
+    
+    # 如果没有找到配置，显示错误信息
+    st.error("""
+    未找到 API Key 配置。请确保：
+    1. config.toml 文件存在于项目根目录
+    2. 文件包含正确的配置格式
+    示例 config.toml:
+    [api]
+    anthropic_key = "your-api-key-here"
+    """)
     st.stop()
 
 # 初始化 Anthropic 客户端
@@ -22,7 +35,8 @@ try:
     api_key = get_api_key()
     anthropic = Anthropic(api_key=api_key)
 except Exception as e:
-    st.error(f"API 初始化错误: {str(e)}")
+    st.error(f"初始化 Anthropic 客户端失败: {str(e)}")
+    st.stop()
 
 # 预设的 system prompts
 PRESET_PROMPTS = {
